@@ -2,10 +2,10 @@ const express = require("express");
 const morgan = require("morgan");
 const helmet = require("helmet");
 const cors = require("cors");
-const sanitizer = require("perfect-express-sanitizer"); 
+const sanitizer = require("perfect-express-sanitizer");
 const cookieParser = require("cookie-parser");
-const {PORT,NODE_ENV}=require('./config/env');
-const dbConnect = require('./config/db');
+const { PORT, NODE_ENV } = require("./config/env");
+const dbConnect = require("./config/db");
 const routes = require("./routes/index");
 const app = express();
 app.use(express.json());
@@ -18,17 +18,17 @@ app.use(morgan("dev"));
 app.use(helmet());
 // Input sanitization to prevent XSS and SQL Injection attacks
 app.use(
-    sanitizer.clean({
-      xss: true,
-      sql: true,
-    })
-  );
-  
-  // Enable Cross-Origin Resource Sharing (CORS)
-  app.use(cors());
+  sanitizer.clean({
+    xss: true,
+    sql: true,
+  })
+);
 
-  //  Routes
-  routes(app);
+// Enable Cross-Origin Resource Sharing (CORS)
+app.use(cors());
+
+//  Routes
+routes(app);
 
 // Handle 404 errors for undefined routes
 app.use((req, res, next) => {
@@ -54,11 +54,10 @@ app.use((err, req, res, next) => {
   }
 });
 
-
-  dbConnect()
+dbConnect()
   .then(async () => {
-      console.log('Connected to MongoDB');
-      // require('./data/insertDummyData')
-      app.listen(PORT, () => console.log(`Listenning to port ${PORT}...`));
+    console.log("Connected to MongoDB");
+    // require('./data/insertDummyData')
+    app.listen(PORT, () => console.log(`Listenning to port ${PORT}...`));
   })
-  .catch((err) => console.log('Db Connection Error: ' + err));
+  .catch((err) => console.log("Db Connection Error: " + err));
