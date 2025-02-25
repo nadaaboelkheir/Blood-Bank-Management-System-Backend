@@ -105,6 +105,6 @@ src/
 
 ## Deployment
 
-[Live API Deployment](link_to_deployment)
+[Live API Deployment](https://blood-bank-management-system-git-c93a00-nadas-projects-f1e8e70d.vercel.app/)
 
 
