@@ -4,6 +4,7 @@ const HospitalRequest = require("../models/HospitalRequest.model");
 const BloodStock = require("../models/BloodStock.model");
 const geocodeCity = require("../utils/geocode");
 const calculateDistance = require("../utils/distance");
+const { sendSuccess } = require("../utils/responseHandler");
 
 const createHospitalRequestBlood = AsyncHandler(async (req, res) => {
   const { hospitalName, hospitalCity, bloodType, quantity, patientStatus } =
@@ -27,37 +28,34 @@ const createHospitalRequestBlood = AsyncHandler(async (req, res) => {
     quantity,
   });
 
-  res.status(201).json({
-    message: "Blood request processed successfully.",
-    hospitalRequest,
-  });
+  return sendSuccess(
+    res,
+    { hospitalRequest },
+    201,
+    "Blood request processed successfully."
+  );
 });
 
 const processHospitalRequests = AsyncHandler(async (req, res, next) => {
-  try {
-    const pendingRequests = await HospitalRequest.find({ status: "Pending" })
-      .sort({ createdAt: 1 })
-      // .limit(10) // Process exactly 10 requests per batch
-      .lean();
-    // console.log(pendingRequests);
-    if (pendingRequests.length < 10) {
-      return res
-        .status(400)
-        .json({ message: " Less than 10 pending requests" });
-    }
-
-    // Process the batch of requests
-    const processedRequests = await processBatchRequests(pendingRequests);
-
-    // Send a response with the processed requests
-    res.status(200).json({
-      message: "Batch processing completed",
-      processedRequests: processedRequests,
-    });
-  } catch (error) {
-    console.error("Batch processing error:", error.message);
-    res.status(500).json({ error: "Batch processing error" });
+  const pendingRequests = await HospitalRequest.find({ status: "Pending" })
+    .sort({ createdAt: 1 })
+    // .limit(10) // Process exactly 10 requests per batch
+    .lean();
+  // console.log(pendingRequests);
+  if (pendingRequests.length < 10) {
+    return res.status(400).json({ message: " Less than 10 pending requests" });
   }
+
+  // Process the batch of requests
+  const processedRequests = await processBatchRequests(pendingRequests);
+
+  // Send a response with the processed requests
+  return sendSuccess(
+    res,
+    { processedRequests },
+    200,
+    "Batch processing completed successfully."
+  );
 });
 
 const processBatchRequests = async (requests) => {
@@ -127,7 +125,10 @@ const processBloodStocks = async (bloodStocks, hospitalLocation) => {
           ),
         };
       } catch (error) {
-        if (stockLocation.lat === hospitalLocation.lat && stockLocation.lng === hospitalLocation.lng) {
+        if (
+          stockLocation.lat === hospitalLocation.lat &&
+          stockLocation.lng === hospitalLocation.lng
+        ) {
           return { ...stock, distance: 0 };
         }
 
@@ -169,13 +170,18 @@ const getRequestStatus = AsyncHandler(async (req, res) => {
     return res.status(404).json({ error: "Request not found" });
   }
 
-  res.status(200).json(request);
+  return sendSuccess(
+    res,
+    { request },
+    200,
+    "Request status retrieved successfully"
+  );
 });
 
 const getAllRequestsByHospital = AsyncHandler(async (req, res) => {
   const { hospitalName } = req.params;
   const requests = await HospitalRequest.find({ hospitalName });
-  return res.status(200).json(requests);
+  return sendSuccess(res, { requests }, 200, "Requests retrieved successfully");
 });
 module.exports = {
   createHospitalRequestBlood,
