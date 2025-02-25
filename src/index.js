@@ -44,6 +44,7 @@ dbConnect()
   .then(async () => {
     console.log("Connected to MongoDB");
     // require('./data/insertDummyData')
+    
     app.listen(PORT, () => console.log(`Listenning to port ${PORT}...`));
   })
   .catch((err) => console.log("Db Connection Error: " + err));
