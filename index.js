@@ -4,11 +4,11 @@ const helmet = require("helmet");
 const cors = require("cors");
 const sanitizer = require("perfect-express-sanitizer");
 const cookieParser = require("cookie-parser");
-const { PORT } = require("./config/env");
-const dbConnect = require("./config/db");
-const routes = require("./routes/index");
-const errorHandler = require("./middlewares/errorHandler");
-const AppError = require("./utils/AppError");
+const { PORT } = require("./src/config/env");
+const dbConnect = require("./src/config/db");
+const routes = require("./src/routes/index");
+const errorHandler = require("./src/middlewares/errorHandler");
+const AppError = require("./src/utils/AppError");
 const app = express();
 app.use(express.json());
 app.use(cookieParser());
@@ -32,6 +32,10 @@ app.use(cors());
 //  Routes
 routes(app);
 
+app.get("/", function (req, res) {
+  res.send("Welcome Sir! The Server is working great.");
+});
+
 // Handle 404 errors for undefined routes
 app.use((req, res, next) => {
   next(new AppError("route Not Found", 404));
@@ -44,7 +48,7 @@ dbConnect()
   .then(async () => {
     console.log("Connected to MongoDB");
     // require('./data/insertDummyData')
-    
+
     app.listen(PORT, () => console.log(`Listenning to port ${PORT}...`));
   })
   .catch((err) => console.log("Db Connection Error: " + err));
