@@ -97,7 +97,7 @@ src/
 
 ## ERD (Entity-Relationship Diagram)
 
-![ERD](./erd.PNG)
+![ERD](./src/erd.PNG)
 
 ## Postman Collection
 
