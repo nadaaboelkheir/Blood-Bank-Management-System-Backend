@@ -173,8 +173,8 @@ const getRequestStatus = AsyncHandler(async (req, res) => {
 });
 
 const getAllRequestsByHospital = AsyncHandler(async (req, res) => {
-  const { hospitalId } = req.params;
-  const requests = await HospitalRequest.find({ hospitalId });
+  const { hospitalName } = req.params;
+  const requests = await HospitalRequest.find({ hospitalName });
   return res.status(200).json(requests);
 });
 module.exports = {

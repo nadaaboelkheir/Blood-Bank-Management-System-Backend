@@ -4,7 +4,6 @@ const BloodStock = require("../models/BloodStock.model");
 const Donor = require("../models/Donor.model");
 const { sendEmail } = require("../config/sendMail");
 
-
 const donateBlood = AsyncHandler(async (req, res) => {
   const { donorId, virusTestResult, bloodType, bloodBankCity } = req.body;
 
@@ -108,7 +107,7 @@ const createDonationRecord = async ({
     donor: donorId,
     virusTestResult,
     accepted,
-    rejectionReasons: accepted ? undefined : rejectionReasons,
+    rejectionReasons: accepted ? [] : rejectionReasons,
     donationDate: new Date(),
   };
 
@@ -148,5 +147,14 @@ const notifyDonorOfRejection = async (email, rejectionReasons) => {
     `Your donation was rejected due to: ${rejectionReasons.join(", ")}`
   );
 };
-
-module.exports = { donateBlood };
+const getDonationByDonor = AsyncHandler(async (req, res) => {
+  const donorId = req.params.donorId;
+  const donations = await Donation.find({ donor: donorId });
+  if (!donations || donations.length === 0) {
+    return res.status(404).json({ message: "Donations not found" });
+  }
+  return res
+    .status(200)
+    .json({ message: "Donations retrieved successfully", donations });
+});
+module.exports = { donateBlood, getDonationByDonor };
