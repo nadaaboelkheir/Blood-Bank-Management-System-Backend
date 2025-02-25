@@ -1,9 +1,8 @@
-// Import required modules
 const HospitalRequest = require("../models/HospitalRequest.model");
 const BloodStock = require("../models/BloodStock.model");
 const Donation = require("../models/Donation.model");
 const mongoose = require("mongoose");
-const { ObjectId } = mongoose.Types; 
+const { ObjectId } = mongoose.Types;
 const dummyHospitalRequests = [
   // Immediate priority - should be processed first
   {
@@ -351,18 +350,28 @@ const dummyBloodStocks = [
 ];
 const insertDummyData = async () => {
   try {
-    // Insert dummy hospital requests
-    await HospitalRequest.insertMany(dummyHospitalRequests);
+    const hospitalRequests = await HospitalRequest.insertMany(
+      dummyHospitalRequests
+    );
+    if (!hospitalRequests) {
+      return res.status(500).send("Failed to insert hospital requests");
+    }
     console.log("Dummy hospital requests inserted.");
-    await Donation.insertMany(dummyDonations);
+
+    const donations = await Donation.insertMany(dummyDonations);
+    if (!donations) {
+      return res.status(500).send("Failed to insert donations");
+    }
     console.log("Dummy donations inserted.");
-    // Insert dummy blood stocks
-    await BloodStock.insertMany(dummyBloodStocks);
+
+    const bloodStocks = await BloodStock.insertMany(dummyBloodStocks);
+    if (!bloodStocks) {
+      return res.status(500).send("Failed to insert blood stocks");
+    }
     console.log("Dummy blood stocks inserted.");
   } catch (error) {
     console.error("Error inserting dummy data:", error.message);
   }
 };
 
-// Call the function to insert dummy data
 insertDummyData();
