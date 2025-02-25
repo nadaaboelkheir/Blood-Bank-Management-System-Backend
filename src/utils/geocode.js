@@ -1,5 +1,6 @@
 const axios = require("axios");
 const { GEOAPIFY_API_KEY } = require("../config/env");
+const { AppError } = require("../utils/AppError");
 
 const geocodeCity = async (cityName) => {
   try {
@@ -14,7 +15,7 @@ const geocodeCity = async (cityName) => {
     );
 
     if (!response.data?.features?.length) {
-      throw new Error(`Could not geocode city: ${cityName}`);
+      throw new AppError("City not found", 404);
     }
 
     const [lng, lat] = response.data.features[0].geometry.coordinates;

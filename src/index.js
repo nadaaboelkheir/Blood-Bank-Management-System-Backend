@@ -4,9 +4,11 @@ const helmet = require("helmet");
 const cors = require("cors");
 const sanitizer = require("perfect-express-sanitizer");
 const cookieParser = require("cookie-parser");
-const { PORT, NODE_ENV } = require("./config/env");
+const { PORT } = require("./config/env");
 const dbConnect = require("./config/db");
 const routes = require("./routes/index");
+const errorHandler = require("./middlewares/errorHandler");
+const AppError = require("./utils/AppError");
 const app = express();
 app.use(express.json());
 app.use(cookieParser());
@@ -32,27 +34,11 @@ routes(app);
 
 // Handle 404 errors for undefined routes
 app.use((req, res, next) => {
-  res.status(404).send({ error: "Not Found" });
+  next(new AppError("route Not Found", 404));
 });
 
 // Global error handler for uncaught errors
-app.use((err, req, res, next) => {
-  const statusCode = err.statusCode || 500;
-
-  if (NODE_ENV?.trim() === "development") {
-    res.status(statusCode).send({
-      error: {
-        message: err.message,
-        stack: err.stack,
-        status: statusCode,
-      },
-    });
-  } else {
-    res.status(statusCode).send({
-      error: "Internal Server Error",
-    });
-  }
-});
+app.use(errorHandler);
 
 dbConnect()
   .then(async () => {

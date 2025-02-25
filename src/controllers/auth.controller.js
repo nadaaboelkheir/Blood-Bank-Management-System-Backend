@@ -2,9 +2,14 @@ const AsyncHandler = require("express-async-handler");
 const Donor = require("../models/Donor.model");
 const { generateTokens } = require("../utils/generateToken");
 const { sendSuccess } = require("../utils/responseHandler");
+const { AppError } = require("../utils/AppError");
 
 const signup = AsyncHandler(async (req, res) => {
   const { nationalID, name, city, email, password } = req.body;
+  const existingDonor = await Donor.findOne({ nationalID });
+  if (existingDonor) {
+    throw new AppError("Email already exists", 400);
+  }
   const donor = await Donor.create({ nationalID, name, city, email, password });
 
   const payload = { id: donor._id, role: "donor" };
@@ -38,12 +43,12 @@ const login = AsyncHandler(async (req, res) => {
   const { email, password } = req.body;
   const donor = await Donor.findOne({ email });
   if (!donor) {
-    return res.status(401).json({ error: "Invalid credentials" });
+    throw new AppError("Donor not found", 404);
   }
 
   const isMatch = await donor.matchPassword(password);
   if (!isMatch) {
-    return res.status(401).json({ error: "Invalid credentials" });
+    throw new AppError("Invalid credentials", 401);
   }
 
   const payload = { id: donor._id, role: "donor" };

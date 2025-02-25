@@ -5,6 +5,7 @@ const BloodStock = require("../models/BloodStock.model");
 const geocodeCity = require("../utils/geocode");
 const calculateDistance = require("../utils/distance");
 const { sendSuccess } = require("../utils/responseHandler");
+const { AppError } = require("../utils/AppError");
 
 const createHospitalRequestBlood = AsyncHandler(async (req, res) => {
   const { hospitalName, hospitalCity, bloodType, quantity, patientStatus } =
@@ -16,7 +17,7 @@ const createHospitalRequestBlood = AsyncHandler(async (req, res) => {
     !["Immediate", "Urgent", "Normal"].includes(patientStatus) ||
     quantity <= 0
   ) {
-    return res.status(400).json({ error: "Invalid request format." });
+    throw new AppError("Invalid request format.", 400);
   }
 
   // Create request with default status "Pending"
@@ -43,7 +44,7 @@ const processHospitalRequests = AsyncHandler(async (req, res, next) => {
     .lean();
   // console.log(pendingRequests);
   if (pendingRequests.length < 10) {
-    return res.status(400).json({ message: " Less than 10 pending requests" });
+    throw new AppError("Less than 10 pending requests", 400);
   }
 
   // Process the batch of requests
@@ -167,7 +168,7 @@ const getRequestStatus = AsyncHandler(async (req, res) => {
   const request = await HospitalRequest.findById(requestId);
 
   if (!request) {
-    return res.status(404).json({ error: "Request not found" });
+    throw new AppError("Request not found", 404);
   }
 
   return sendSuccess(
@@ -181,6 +182,9 @@ const getRequestStatus = AsyncHandler(async (req, res) => {
 const getAllRequestsByHospital = AsyncHandler(async (req, res) => {
   const { hospitalName } = req.params;
   const requests = await HospitalRequest.find({ hospitalName });
+  if (!requests) {
+    throw new AppError("Requests not found", 404);
+  }
   return sendSuccess(res, { requests }, 200, "Requests retrieved successfully");
 });
 module.exports = {

@@ -3,6 +3,8 @@ const BloodStock = require("../models/BloodStock.model");
 const Donation = require("../models/Donation.model");
 const mongoose = require("mongoose");
 const { ObjectId } = mongoose.Types;
+const { AppError } = require("../utils/AppError");
+
 const dummyHospitalRequests = [
   // Immediate priority - should be processed first
   {
@@ -354,19 +356,19 @@ const insertDummyData = async () => {
       dummyHospitalRequests
     );
     if (!hospitalRequests) {
-      return res.status(500).send("Failed to insert hospital requests");
+      throw new Error("Failed to insert hospital requests");
     }
     console.log("Dummy hospital requests inserted.");
 
     const donations = await Donation.insertMany(dummyDonations);
     if (!donations) {
-      return res.status(500).send("Failed to insert donations");
+      throw new Error("Failed to insert donations");
     }
     console.log("Dummy donations inserted.");
 
     const bloodStocks = await BloodStock.insertMany(dummyBloodStocks);
     if (!bloodStocks) {
-      return res.status(500).send("Failed to insert blood stocks");
+      throw new Error("Failed to insert blood stocks");
     }
     console.log("Dummy blood stocks inserted.");
   } catch (error) {
